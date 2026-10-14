@@ -1,0 +1,255 @@
+{
+  "$schema_note": "Curated incident seeds from public government/industry reporting. Each address carries an evidence level and provenance. 'partial: true' = source published a truncated address; resolve the full value from the cited report. These are seeds for eval fixtures, NOT a transaction-by-transaction answer key.",
+  "generated_for": "chain-screener evals",
+  "evidence_levels": {
+    "ofac_sdn": "Official US Treasury OFAC sanctions designation (government record).",
+    "doj_verified": "US DOJ / law-enforcement verified or seized.",
+    "fbi_published": "Published by the FBI.",
+    "on_chain_verified": "Verified from on-chain data / victim disclosure.",
+    "industry_attribution": "Attribution from credible industry analysis (Chainalysis, TRM, Coinbase, Galaxy, etc.).",
+    "explorer_label": "Block-explorer (Etherscan/BscScan/Blockscout) community/public label."
+  },
+  "incidents": [
+    {
+      "id": "bitfinex_2016",
+      "name": "Bitfinex hack",
+      "date": "2016-08-02",
+      "chain": "bitcoin",
+      "loss": "119,754 BTC (~$71M then, ~$4.5B+ at 2024 prices)",
+      "actor": "Ilya Lichtenstein / Heather Morgan (Razzlekhan) - convicted",
+      "vector": "Network intrusion; 2,000+ unauthorized transactions to attacker-controlled wallet.",
+      "evidence": "doj_verified",
+      "seeds": [
+        {
+          "chain": "bitcoin",
+          "addr": "1CGA4sEF1kkXrFRVxTQmd7Mx4aojn6c8b5",
+          "role": "initial recipient wallet (DOJ: 'Wallet 1CGA4s')",
+          "partial": true,
+          "note": "DOJ documents refer to the recipient as Wallet 1CGA4s. Confirm the full string against the DOJ statement of facts before relying on it."
+        }
+      ],
+      "refs": [
+        "https://www.justice.gov/usao-dc/2016-bitfinex-hack",
+        "https://www.justice.gov/archives/opa/pr/bitfinex-hacker-sentenced-money-laundering-conspiracy-involving-billions-stolen"
+      ]
+    },
+    {
+      "id": "kucoin_2020",
+      "name": "KuCoin hot-wallet hack",
+      "date": "2020-09-26",
+      "chain": "ethereum",
+      "loss": "~$281M (BTC, ETH, ERC-20, XRP, LTC, TRX, XLM, USDT)",
+      "actor": "unattributed",
+      "vector": "Compromise of hot-wallet private keys. Cold wallets unaffected.",
+      "evidence": "explorer_label",
+      "seeds": [
+        {
+          "chain": "ethereum",
+          "addr": "0xeb31973e0febf3e3d7058234a5ebbae1ab4b8c23",
+          "role": "main hacker address (Etherscan: 'Kucoin Hacker')",
+          "partial": false
+        }
+      ],
+      "refs": [
+        "https://www.kucoin.com/announcement/en-kucoin-security-incident-update",
+        "https://www.chainalysis.com/blog/kucoin-hack-2020-defi-uniswap"
+      ]
+    },
+    {
+      "id": "poly_network_2021",
+      "name": "Poly Network exploit",
+      "date": "2021-08-10",
+      "chain": "ethereum, bsc, polygon",
+      "loss": "~$611M (mostly returned by the attacker)",
+      "actor": "unattributed ('Mr. White Hat'), returned funds",
+      "vector": "Access-control flaw in the cross-chain keeper/relayer; replaced keeper with attacker address.",
+      "evidence": "on_chain_verified",
+      "seeds": [
+        {"chain": "ethereum", "addr": "0xC8a65Fadf0e0dDAf421F28FEAb69Bf6E2E589963", "role": "attacker (ETH)"},
+        {"chain": "bsc", "addr": "0x0D6e286A7cfD25E0c01fEe9756765D8033B32C71", "role": "attacker (BSC)"},
+        {"chain": "polygon", "addr": "0x5dc3603C9D42Ff184153a8a9094a73d461663214", "role": "attacker (Polygon)"}
+      ],
+      "refs": [
+        "https://www.chainalysis.com/blog/poly-network-hack-august-2021"
+      ]
+    },
+    {
+      "id": "wormhole_2022",
+      "name": "Wormhole bridge exploit",
+      "date": "2022-02-02",
+      "chain": "ethereum, solana",
+      "loss": "120,000 wETH (~$326M). Later reimbursed by Jump Crypto.",
+      "actor": "unattributed",
+      "vector": "Signature-verification bypass on the Solana side; minted 120k wETH with no backing.",
+      "evidence": "industry_attribution",
+      "seeds": [
+        {"chain": "ethereum", "addr": "0x629e7Da20197a5429d30da36E7aD093bE56e0C6C", "role": "attacker (ETH)"},
+        {"chain": "solana", "addr": "CxegPrfn2ge5dNiQberUrQJkHCcimeR4VXkeawcFBBka", "role": "attacker (Solana)"}
+      ],
+      "refs": [
+        "https://www.certik.com/blog/wormhole-bridge-exploit-incident-analysis"
+      ]
+    },
+    {
+      "id": "ronin_2022",
+      "name": "Ronin Bridge hack (Axie Infinity)",
+      "date": "2022-03-23",
+      "chain": "ethereum",
+      "loss": "173,600 ETH + 25.5M USDC (~$625M)",
+      "actor": "Lazarus Group (DPRK)",
+      "vector": "5 of 9 validator keys compromised (incl. an unrevoked delegated Axie DAO key).",
+      "evidence": "ofac_sdn",
+      "seeds": [
+        {"chain": "ethereum", "addr": "0x098B716B8Aaf21512996dC57EB0615e2383E2f96", "role": "primary aggregation address", "sanctioned": true},
+        {"chain": "ethereum", "addr": "0x1a2a1c938ce3ec39b6d47113c7955baa9dd454f2", "role": "Ronin Bridge contract (victim)", "sanctioned": false}
+      ],
+      "attack_txs": [
+        "0xed2c72ef1a552ddaec6dd1f5cddf0b59a8f37f82bdda5257d9c7c37db7bb9b08",
+        "0xc28fad5e8d5e0ce6a2eaf67b6687be5d58113e16be590824d6cfa1a94467d0b7"
+      ],
+      "refs": [
+        "https://sanctionssearch.ofac.treas.gov/Details.aspx?id=27307"
+      ]
+    },
+    {
+      "id": "harmony_horizon_2022",
+      "name": "Harmony Horizon Bridge exploit",
+      "date": "2022-06-23",
+      "chain": "ethereum, bsc",
+      "loss": "~$100M (later valued ~$139M)",
+      "actor": "unattributed (possibly Lazarus-linked)",
+      "vector": "Compromised multisig signing keys (2-of-5); forged withdrawals.",
+      "evidence": "industry_attribution",
+      "seeds": [
+        {"chain": "ethereum", "addr": "0x0d043128146654c7683fbf30ac98d7b2285ded00", "role": "H1 - main exploiter"},
+        {"chain": "ethereum", "addr": "0x9E91ae672E7f7330Fc6B9bAb9C259BD94Cd08715", "role": "H2"},
+        {"chain": "ethereum", "addr": "0x58F4BACcb411ACef70A5f6DD174Af7854fc48Fa9", "role": "H3"},
+        {"chain": "ethereum", "addr": "0x1Ec6F83b55C3F4CeFc630442716872BA15f16430", "role": "H4"}
+      ],
+      "refs": [
+        "https://www.merklescience.com/blog/hack-track-analysis-of-harmonys-horizon-bridge-exploit"
+      ]
+    },
+    {
+      "id": "nomad_2022",
+      "name": "Nomad Bridge exploit",
+      "date": "2022-08-01",
+      "chain": "ethereum",
+      "loss": "~$190M (free-for-all; ~88% copycats)",
+      "actor": "bitliq.eth (original) + hundreds of copycats + white hats",
+      "vector": "Trusted-root flaw: any message could be forged; copy-paste drain.",
+      "evidence": "industry_attribution",
+      "seeds": [
+        {"chain": "ethereum", "addr": "0xa8c83b1b30291a3a1a118058b5445cc83041cd9d", "role": "original exploiter (bitliq.eth) recipient"},
+        {"chain": "ethereum", "addr": "0x94A84433101A10aEda762968f6995c574D1bF154", "role": "official Nomad recovery address (victim)"}
+      ],
+      "refs": [
+        "https://www.coinbase.com/blog/nomad-bridge-incident-analysis",
+        "https://github.com/nomad-xyz/hack-data"
+      ]
+    },
+    {
+      "id": "bnb_bridge_2022",
+      "name": "BNB Bridge / BSC Token Hub exploit",
+      "date": "2022-10-06",
+      "chain": "bsc, ethereum",
+      "loss": "2,000,000 BNB (~$570M minted; ~$100M realized)",
+      "actor": "unattributed",
+      "vector": "IAVL Merkle-proof verification flaw -> forged message -> minted 2M BNB.",
+      "evidence": "industry_attribution",
+      "seeds": [
+        {"chain": "bsc", "addr": "0x489A8756C18C0b8B24EC2a2b9FF3D4d447F79BEc", "role": "BNB Bridge Exploiter"}
+      ],
+      "refs": [
+        "https://www.elliptic.co/blog/analysis/attack-mints-569-million-worth-of-bnb-tokens-in-bsc-bridge-exploit"
+      ]
+    },
+    {
+      "id": "ftx_2022",
+      "name": "FTX accounts drain",
+      "date": "2022-11-11",
+      "chain": "ethereum",
+      "loss": "~$600M (post-bankruptcy unauthorized transfers)",
+      "actor": "unattributed",
+      "vector": "Post-collapse drain of exchange wallets.",
+      "evidence": "explorer_label",
+      "seeds": [
+        {"chain": "ethereum", "addr": "0x59ABf3837Fa962d6853b4Cc0a19513AA031fd32b", "role": "FTX Accounts Drainer (main)"}
+      ],
+      "refs": [
+        "https://etherscan.io/address/0x59abf3837fa962d6853b4cc0a19513aa031fd32b"
+      ]
+    },
+    {
+      "id": "euler_2023",
+      "name": "Euler Finance exploit",
+      "date": "2023-03-13",
+      "chain": "ethereum",
+      "loss": "~$197M (later most funds returned)",
+      "actor": "unattributed ('Jacob')",
+      "vector": "Flash-loan attack exploiting missing liquidity check in donateToReserves().",
+      "evidence": "industry_attribution",
+      "seeds": [
+        {"chain": "ethereum", "addr": "0xb66cd966670d962c227b3eaba30a872dbfb995db", "role": "Exploiter 1"},
+        {"chain": "ethereum", "addr": "0xb2698c2d99ad2c302a95a8db26b08d17a77cedd4", "role": "Exploiter 2"},
+        {"chain": "ethereum", "addr": "0xc66dfa84bc1b93df194bd964a41282da65d73c9a", "role": "Exploiter 3 (Tornado deposit holdover)"}
+      ],
+      "refs": [
+        "https://www.coinbase.com/blog/euler-compromise-investigation-part-2-the-redemption"
+      ]
+    },
+    {
+      "id": "bybit_2025",
+      "name": "Bybit cold-wallet hack",
+      "date": "2025-02-21",
+      "chain": "ethereum, arbitrum",
+      "loss": "~401,346 ETH (~$1.5B)",
+      "actor": "Lazarus Group (DPRK, TraderTraitor)",
+      "vector": "Safe{Wallet} multisig UI compromise; malicious implementation contract with sweep backdoors.",
+      "evidence": "on_chain_verified",
+      "seeds": [
+        {"chain": "ethereum", "addr": "0x47666Fab8bd0Ac7003bce3f5C3585383F09486E2", "role": "Bybit Exploiter 1 (main)"},
+        {"chain": "ethereum", "addr": "0x0fa09C3A328792253f8dee7116848723b72a6d2e", "role": "initial attack operator"},
+        {"chain": "ethereum", "addr": "0xbDd077f651EBe7f7b3cE16fe5F2b025BE2969516", "role": "malicious Safe implementation contract"},
+        {"chain": "ethereum", "addr": "0x96221423681A6d52E184D440a8eFCEbB105C7242", "role": "delegate-call attack contract"},
+        {"chain": "ethereum", "addr": "0x1Db92e2EeBC8E0c075a02BeA49a2935BcD2dFCF4", "role": "victim: Bybit Cold Wallet 1"}
+      ],
+      "fbi_attributed": [
+        "0x51E9d833Ecae4E8D9D8Be17300AEE6D3398C135D",
+        "0x96244D83DC15d36847C35209bBDc5bdDE9bEc3D8",
+        "0x83c7678492D623fb98834F0fbcb2E7b7f5Af8950"
+      ],
+      "attack_txs": [
+        "0xb61413c495fdad6114a7aa863a00b2e3c28945979a10885b12b30316ea9f072c",
+        "0x46deef0f52e3a983b67abf4714448a41dd7ffd6d32d32da69d62081c68ad7882"
+      ],
+      "refs": [
+        "https://lazarus.day/reports/bybit-incident-investigation-preliminary-report-c0Ntw"
+      ]
+    },
+    {
+      "id": "coldcard_2026",
+      "name": "Coldcard cold-wallet exploit (weak RNG)",
+      "date": "2026-07-30",
+      "chain": "bitcoin",
+      "loss": ">=1,778 BTC (~$110M+) from >8,600 addresses",
+      "actor": ">=15 attacker clusters",
+      "vector": "Firmware RNG integration error -> deterministic seed entropy (~40-72 bits) -> offline key reconstruction.",
+      "evidence": "industry_attribution",
+      "pattern": {
+        "type": "fan_in",
+        "signature": "identical 30.0 sat/vB fee, no change output, full sweep",
+        "wave_1": "1,082.65 BTC from 1,196 addresses in 41 min (blocks 960,183-960,191)"
+      },
+      "seeds": [
+        {"chain": "bitcoin", "addr": "bc1qq85v2c9...cu9r", "role": "collector (562.02 BTC)", "partial": true},
+        {"chain": "bitcoin", "addr": "bc1qx76cae2...fhe3", "role": "collector (398.48 BTC)", "partial": true},
+        {"chain": "bitcoin", "addr": "bc1q8jy96fe...tp3q", "role": "collector (89.62 BTC)", "partial": true},
+        {"chain": "bitcoin", "addr": "bc1qnk4zh9q...fecp0", "role": "collector (32.45 BTC)", "partial": true}
+      ],
+      "refs": [
+        "https://www.galaxy.com/insights/research/coldcard-exploit-abates-as-total-losses-climb-to-at-least-1700-btc"
+      ]
+    }
+  ]
+}

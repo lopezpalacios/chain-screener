@@ -1,0 +1,93 @@
+{
+  "$schema_note": "Disclosed / publicly-labeled wallet addresses for major exchanges and known players. Each entry carries a source and confidence. HIGH = official exchange page or Etherscan-verified name tag. MEDIUM = leading label aggregators (Blockscout/Etherscan label cloud). LOW = single community source; verify before relying. This is NOT exhaustive; the live aggregators below are the scalable source of truth.",
+  "live_sources": [
+    {
+      "name": "dawsbot/eth-labels",
+      "what": "169k+ Ethereum address labels aggregated from many public label sources (exchanges, DEX, bridges, MEV bots, etc.).",
+      "how": "npm/HTTP package + MCP server; query by address or label string.",
+      "url": "https://github.com/dawsbot/eth-labels"
+    },
+    {
+      "name": "ImMike/crypto-wallet-address-labels",
+      "what": "Curated CSVs incl. the Elliptic BTC dataset (203,769 tx, 46k labeled).",
+      "url": "https://github.com/ImMike/crypto-wallet-address-labels"
+    },
+    {
+      "name": "OFAC-sanctioned digital currency addresses (0xB10C)",
+      "what": "Nightly-refreshed sanctioned address lists per asset (XBT, ETH, XMR, TRON, ARB, BSC, SOL, etc.), sourced from OFAC SDN.",
+      "url": "https://github.com/0xB10C/ofac-sanctioned-digital-currency-addresses"
+    },
+    {
+      "name": "OpenSanctions",
+      "what": "Consolidated sanctions/PEP dataset; crypto wallet entities where designated.",
+      "url": "https://www.opensanctions.org/datasets/"
+    },
+    {
+      "name": "KuCoin official cold-wallet transparency page",
+      "what": "Exchange-published list of its own hot/cold wallets.",
+      "url": "https://www.kucoin.com/proof-of-reserves"
+    }
+  ],
+  "exchange_wallets": [
+    {"exchange": "Binance", "label": "Binance: Hot Wallet 20", "chain": "ethereum", "addr": "0xF977814e90dA44bFA03b6295A0616a897441aceC", "source": "etherscan_name_tag", "confidence": "high"},
+    {"exchange": "Binance", "label": "Binance 14", "chain": "ethereum", "addr": "0x28C6c06298d514Db089934071355E5743bf21d60", "source": "etherscan_name_tag", "confidence": "high"},
+    {"exchange": "Binance", "label": "Binance: Hot Wallet 18", "chain": "ethereum", "addr": "0x73f5ebe90f27b46ea12e5795d16c4b408b19cc6f", "source": "etherscan_name_tag", "confidence": "high"},
+    {"exchange": "Binance", "label": "Binance: Hot Wallet", "chain": "ethereum", "addr": "0x631fc1ea2270e98fbd9d92658ece0f5a269aa161", "source": "etherscan_name_tag", "confidence": "high"},
+    {"exchange": "Binance US", "label": "Binance US: Cold Wallet", "chain": "ethereum", "addr": "0x058A871358c1B01039A265635eA282c3F435a9Ed", "source": "blockscout", "confidence": "medium"},
+
+    {"exchange": "Coinbase", "label": "Coinbase 12", "chain": "ethereum", "addr": "0x503828976D22510aad0201ac7EC88293211D23Da", "source": "etherscan_name_tag", "confidence": "high"},
+    {"exchange": "Coinbase", "label": "Coinbase Exchange: Cold Wallet", "chain": "ethereum", "addr": "0x027cDb6405be613f5dBaEaba4f53b0Bf64054Cd4", "source": "etherscan_name_tag", "confidence": "high"},
+    {"exchange": "Coinbase", "label": "Coinbase Exchange: Cold Wallet", "chain": "ethereum", "addr": "0x0C33013FD51672Ed9b8D0989f5BCA78561732534", "source": "blockscout", "confidence": "medium"},
+    {"exchange": "Coinbase", "label": "Coinbase Exchange: Cold Wallet", "chain": "ethereum", "addr": "0x0F1DB191667Dd22d321Ba41f6E24412ac491dAD2", "source": "blockscout", "confidence": "medium"},
+    {"exchange": "Coinbase", "label": "Coinbase Exchange: Cold Wallet", "chain": "ethereum", "addr": "0x105ee1435FD9E180890e933b2947aD49aFDB6b73", "source": "blockscout", "confidence": "medium"},
+    {"exchange": "Coinbase", "label": "Coinbase: Cold Wallet", "chain": "ethereum", "addr": "0x1c8E534D83ab54DD0A21A88D3f4404dD55D604aD", "source": "blockscout", "confidence": "medium"},
+    {"exchange": "Coinbase", "label": "Coinbase Exchange: Cold Wallet", "chain": "ethereum", "addr": "0x3b81fAE8eFE585Ba253aEfe35859F4B7826cEf28", "source": "blockscout", "confidence": "medium"},
+    {"exchange": "Coinbase", "label": "Coinbase Exchange: Cold Wallet", "chain": "ethereum", "addr": "0x553543fB57e7596285fc803F9DBcc524D58FEf71", "source": "blockscout", "confidence": "medium"},
+    {"exchange": "Coinbase", "label": "Coinbase Exchange: Cold Wallet", "chain": "ethereum", "addr": "0x556b55E8D9E8d481A477ca6280a1F371f14F3d74", "source": "blockscout", "confidence": "medium"},
+    {"exchange": "Coinbase", "label": "Coinbase Exchange: Cold Wallet", "chain": "ethereum", "addr": "0x7BF5bA85E717fA52020714fCEfD4b4f469ee0f72", "source": "blockscout", "confidence": "medium"},
+    {"exchange": "Coinbase", "label": "Coinbase Exchange: Cold Wallet", "chain": "ethereum", "addr": "0x7Ec3abfD5ae715cd12A2c57295C6741962F2B4A3", "source": "blockscout", "confidence": "medium"},
+
+    {"exchange": "KuCoin", "label": "KuCoin (main hot wallet)", "chain": "ethereum", "addr": "0xd6216fc19db775df9774a6e33526131da7d19a2c", "source": "kucoin_official", "confidence": "high"},
+    {"exchange": "KuCoin", "label": "KuCoin", "chain": "ethereum", "addr": "0xcad621da75a66c7a8f4ff86d30a2bf981bfc8fdd", "source": "kucoin_official", "confidence": "high"},
+    {"exchange": "KuCoin", "label": "KuCoin", "chain": "ethereum", "addr": "0xd89350284c7732163765b23338f2ff27449e0bf5", "source": "kucoin_official", "confidence": "high"},
+    {"exchange": "KuCoin", "label": "KuCoin", "chain": "ethereum", "addr": "0xb8e6d31e7b212b2b7250ee9c26c56cebbfbe6b23", "source": "kucoin_official", "confidence": "high"},
+    {"exchange": "KuCoin", "label": "KuCoin", "chain": "ethereum", "addr": "0xec30d02f10353f8efc9601371f56e808751f396f", "source": "kucoin_official", "confidence": "high"},
+    {"exchange": "KuCoin", "label": "KuCoin", "chain": "ethereum", "addr": "0x88bd4d3e2997371bceefe8d9386c6b5b4de60346", "source": "kucoin_official", "confidence": "high"},
+    {"exchange": "KuCoin", "label": "KuCoin", "chain": "ethereum", "addr": "0x1692e170361cefd1eb7240ec13d048fd9af6d667", "source": "kucoin_official", "confidence": "high"},
+    {"exchange": "KuCoin", "label": "KuCoin", "chain": "ethereum", "addr": "0x2a8c8b09bd77c13980495a959b26c1305166a57f", "source": "kucoin_official", "confidence": "high"},
+    {"exchange": "KuCoin", "label": "KuCoin", "chain": "ethereum", "addr": "0x14ea40648fc8c1781d19363f5b9cc9a877ac2469", "source": "kucoin_official", "confidence": "high"},
+    {"exchange": "KuCoin", "label": "KuCoin", "chain": "bitcoin", "addr": "bc1qgrxsrmrhsapvh9addyx6sh8j4rw0sn9xtur9uq", "source": "kucoin_official", "confidence": "high"},
+    {"exchange": "KuCoin", "label": "KuCoin", "chain": "bitcoin", "addr": "38fJPq4dYGPoJizEUGCL9yWkqg73cJmC2n", "source": "kucoin_official", "confidence": "high"},
+    {"exchange": "KuCoin", "label": "KuCoin", "chain": "bitcoin", "addr": "bc1q8yja3gw33ngd8aunmfr4hj820adc9nlsv0syvz", "source": "kucoin_official", "confidence": "high"},
+    {"exchange": "KuCoin", "label": "KuCoin", "chain": "bitcoin", "addr": "bc1q080rkmk3kj86pxvf5nkxecdrw6nrx3zzy9xl7q", "source": "kucoin_official", "confidence": "high"},
+    {"exchange": "KuCoin", "label": "KuCoin", "chain": "tron", "addr": "TRYL7PKCG4b4xRCM554Q5J6o8f1UjUmfnY", "source": "kucoin_official", "confidence": "high"},
+
+    {"exchange": "OKX", "label": "OKX: Hot Wallet 5", "chain": "ethereum", "addr": "0x559432e18b281731c054cd703d4b49872be4ed53", "source": "etherscan_name_tag", "confidence": "high"},
+    {"exchange": "OKX", "label": "OKX: Hot Wallet 2", "chain": "ethereum", "addr": "0x4E7b110335511F662FDBB01bf958A7844118c0D4", "source": "etherscan_name_tag", "confidence": "high"},
+    {"exchange": "OKX", "label": "OKX: Hot Wallet 4", "chain": "ethereum", "addr": "0xd19d3341227967610b94e7aebe8c971d2d48f419", "source": "etherscan_name_tag", "confidence": "high"},
+    {"exchange": "OKX", "label": "OKX: Cold Wallet", "chain": "ethereum", "addr": "0x611f7bf868a6212f871e89f7e44684045ddfb09d", "source": "etherscan_name_tag", "confidence": "high"},
+    {"exchange": "OKX", "label": "OKX: Cold Wallet", "chain": "ethereum", "addr": "0x539C92186f7C6CC4CbF443F26eF84C595baBBcA1", "source": "blockscout", "confidence": "medium"},
+
+    {"exchange": "Kraken", "label": "Kraken: Hot Wallet", "chain": "ethereum", "addr": "0xe9f7ecae3a53d2a67105292894676b00d1fab785", "source": "etherscan_name_tag", "confidence": "high"},
+    {"exchange": "Kraken", "label": "Kraken 245", "chain": "ethereum", "addr": "0x7dafba1d69f6c01ae7567ffd7b046ca03b706f83", "source": "etherscan_name_tag", "confidence": "high"},
+    {"exchange": "Kraken", "label": "Kraken: Cold Wallet", "chain": "ethereum", "addr": "0x53d284357ec70cE289D6D64134DfAc8E511c8a3D", "source": "etherscan_name_tag", "confidence": "high"},
+
+    {"exchange": "Gemini", "label": "Gemini", "chain": "ethereum", "addr": "0xd24400ae8bfebb18ca49be86258a3c749cf46853", "source": "etherscan_name_tag", "confidence": "high"},
+    {"exchange": "Bybit", "label": "Bybit: Hot Wallet 4", "chain": "ethereum", "addr": "0xee5b5b923ffce93a870b3104b7ca09c3db80047a", "source": "etherscan_name_tag", "confidence": "high"},
+    {"exchange": "Bitget", "label": "Bitget: Cold Wallet", "chain": "ethereum", "addr": "0x42b86A269fb3d5368D880c519BadABa77eC00130", "source": "blockscout", "confidence": "medium"},
+    {"exchange": "Bitfinex", "label": "Bitfinex: Hot Wallet", "chain": "ethereum", "addr": "0x0b73F67A49273fc4B9A65DBD25D7d0918E734E63", "source": "blockscout", "confidence": "medium"},
+    {"exchange": "Bitfinex", "label": "Bitfinex: Hot Wallet", "chain": "ethereum", "addr": "0x3F7E77B627676763997344a1AD71aCb765fc8aC5", "source": "blockscout", "confidence": "medium"},
+    {"exchange": "Bitfinex", "label": "Bitfinex: Hot Wallet", "chain": "ethereum", "addr": "0x4fdd5Eb2FB260149A3903859043e962Ab89D8ED4", "source": "blockscout", "confidence": "medium"},
+    {"exchange": "Deribit", "label": "Deribit 6", "chain": "ethereum", "addr": "0x062448f804191128D71FC72e10a1D13Bd7308e7E", "source": "blockscout", "confidence": "medium"},
+    {"exchange": "Coinmetro", "label": "Coinmetro: Cold Wallet", "chain": "ethereum", "addr": "0x7e402cE59EdCd81ff5146b0E992B6E94Ff7A2b4b", "source": "blockscout", "confidence": "medium"},
+    {"exchange": "Bitvavo", "label": "Bitvavo: Cold Wallet", "chain": "ethereum", "addr": "0x7e725fE19e7d00c781d1D8BDdBEBC92B5f1550AF", "source": "blockscout", "confidence": "medium"},
+    {"exchange": "xs2.exchange", "label": "xs2.exchange", "chain": "ethereum", "addr": "0x15C5312E24482547FF35899AFeDCAEB572ECB029", "source": "blockscout", "confidence": "medium"}
+  ],
+  "known_contracts": [
+    {"name": "ETH2 Beacon Deposit Contract", "role": "clean control (deposit contract, not an entity)", "chain": "ethereum", "addr": "0x00000000219ab540356cBB839Cbe05303d7705Fa", "source": "etherscan_name_tag", "confidence": "high"},
+    {"name": "Tornado Cash: Router", "role": "sanctioned mixer (OFAC 2022)", "chain": "ethereum", "addr": "0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b", "source": "ofac_sdn", "confidence": "high"},
+    {"name": "Tornado Cash: 0.1 ETH", "role": "sanctioned mixer pool (OFAC 2022)", "chain": "ethereum", "addr": "0xA160cdAB225685dA1d56aa342Ad8841c3b53f291", "source": "ofac_sdn", "confidence": "high"},
+    {"name": "Wormhole: Token Bridge (victim)", "role": "victim contract", "chain": "ethereum", "addr": "0x3ee18B2214AFF97000D974cf647E7C347E8fa585", "source": "etherscan_name_tag", "confidence": "high"},
+    {"name": "Nomad: Replica/Recovery (victim)", "role": "victim contract", "chain": "ethereum", "addr": "0x5D94309E5a0090b165FA4181519701637B6DAEBA", "source": "etherscan_name_tag", "confidence": "medium"}
+  ]
+}

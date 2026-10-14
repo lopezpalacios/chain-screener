@@ -52,7 +52,15 @@ DATA SOURCES (free, authoritative)
   - GLEIF: legal-entity file / API. WARNING: GLEIF maps legal entities (LEI -> name, country,
     parent). It does NOT map wallets to entities. Use it only to enrich an entity you have
     already attributed by other means. Do not pretend it screens wallets.
-  - fixtures/known-tainted.json (this repo): curated seeds from public incident reporting.
+  - fixtures/known-tainted.json (this repo): curated seeds from public incident reporting (detailed graphs).
+  - fixtures/incidents.json (this repo): 12 hack incidents, each address tagged with an evidence level
+    (ofac_sdn / doj_verified / fbi_published / on_chain_verified / industry_attribution / explorer_label)
+    and provenance URLs. Resolve any `partial: true` (truncated) address from the cited report.
+  - fixtures/known-labels.json (this repo): disclosed exchange/player wallets + known contracts, each
+    with a source and a high/medium/low confidence. NOT exhaustive.
+  - Scale-out label aggregators (prefer these over hand-curation): dawsbot/eth-labels (169k+ ETH labels),
+    ImMike/crypto-wallet-address-labels (incl. Elliptic BTC dataset), Blockscout label API,
+    OFAC-sanctioned-address list (0xB10C), OpenSanctions.
 
 ADDRESS NORMALIZATION (per chain)
   - EVM: lowercase hex, validate EIP-55, strip 0x for storage, re-add on output.
@@ -176,10 +184,12 @@ ML clustering. Real-time alerting. These are later; see "Honest limitation" belo
 
 ## 3. Evals
 
-Fixtures live in `fixtures/known-tainted.json`. Two kinds:
+Fixtures live in `fixtures/known-tainted.json` (detailed graphs), `fixtures/incidents.json`
+(12 incidents, evidence-tagged) and `fixtures/known-labels.json` (exchange/entity labels).
 
 - **Real-world seeds** — addresses published in government/industry incident reporting.
 - **Synthetic graphs** — deterministic constructed graphs with hand-computed expected taint.
+- **Negative controls** — known-clean addresses (e.g. ETH2 deposit contract, exchange hot wallets) that must NOT flag.
 
 ### Eval matrix
 
@@ -216,7 +226,58 @@ MVP is "done" when E1–E6 pass and the metric targets above are met on the fixt
 
 ---
 
-## 4. Prior art / honest limitation
+## 4. Incident cases (`fixtures/incidents.json`)
+
+12 cases, each seeded with at least one address and an evidence level. Two (Bybit, Coldcard) also
+appear in `known-tainted.json` with fuller graphs. Addresses marked `partial` were published
+truncated and must be resolved from the cited report before use.
+
+| # | ID | Date | Chain | Loss | Actor | Evidence |
+|---|---|---|---|---|---|---|
+| 1 | `bitfinex_2016` | 2016-08-02 | BTC | 119,754 BTC | Lichtenstein / Razzlekhan (convicted) | DOJ |
+| 2 | `kucoin_2020` | 2020-09-26 | ETH | ~$281M | unattributed | explorer label |
+| 3 | `poly_network_2021` | 2021-08-10 | ETH/BSC/Polygon | ~$611M | "Mr. White Hat" (returned) | on-chain |
+| 4 | `wormhole_2022` | 2022-02-02 | ETH/SOL | 120k wETH (~$326M) | unattributed | industry |
+| 5 | `ronin_2022` | 2022-03-23 | ETH | ~$625M | Lazarus / DPRK | **OFAC SDN** |
+| 6 | `harmony_horizon_2022` | 2022-06-23 | ETH/BSC | ~$100M | unattributed (Lazarus?) | industry |
+| 7 | `nomad_2022` | 2022-08-01 | ETH | ~$190M | bitliq.eth + copycats | industry |
+| 8 | `bnb_bridge_2022` | 2022-10-06 | BSC/ETH | 2M BNB (~$570M) | unattributed | industry |
+| 9 | `ftx_2022` | 2022-11-11 | ETH | ~$600M | unattributed | explorer label |
+| 10 | `euler_2023` | 2023-03-13 | ETH | ~$197M | "Jacob" (returned) | industry |
+| 11 | `bybit_2025` | 2025-02-21 | ETH/ARB | ~$1.5B | Lazarus / DPRK | on-chain + **FBI** |
+| 12 | `coldcard_2026` | 2026-07-30 | BTC | ≥1,778 BTC | ≥15 clusters | industry |
+
+**Why these:** the set spans attribution types (government-sanctioned, DOJ-convicted, explorer-labeled,
+industry-attributed), chains (ETH, BSC, Polygon, Arbitrum, Solana, Bitcoin), and topologies (single
+exploiter, multi-address syndicate, and Coldcard's many-to-few fan-in). That diversity is what makes
+the evals meaningful rather than one-happy-path.
+
+## 5. Known entity labels (`fixtures/known-labels.json`)
+
+Disclosed exchange/player wallets + known contracts. Each row carries `source` and `confidence`:
+
+- **high** — official exchange disclosure or Etherscan-verified name tag.
+- **medium** — leading label aggregator (Blockscout / Etherscan label cloud). Verify before relying.
+- **low** — single community source.
+
+Coverage in the file: **Binance, Coinbase, KuCoin, OKX, Kraken, Gemini, Bybit, Bitget, Bitfinex,
+Deribit, Coinmetro, Bitvavo, xs2.exchange** (48 wallets) plus contracts (ETH2 deposit, Tornado Cash
+Router + 0.1 ETH pool [OFAC], Wormhole bridge, Nomad replica).
+
+Key principle: **use the aggregators as the scalable source of truth, keep curated fixtures as
+deterministic test data.** The curated list is a seed, not the product. Live sources:
+
+| Source | What | Scale |
+|---|---|---|
+| [dawsbot/eth-labels](https://github.com/dawsbot/eth-labels) | Aggregated ETH labels (exchanges, DEX, bridges, MEV, etc.) | 169k+ |
+| [ImMike/crypto-wallet-address-labels](https://github.com/ImMike/crypto-wallet-address-labels) | Curated CSVs + Elliptic BTC dataset | ~46k labeled |
+| [0xB10C/ofac-sanctioned-addresses](https://github.com/0xB10C/ofac-sanctioned-digital-currency-addresses) | Nightly OFAC SDN per-asset address lists | official |
+| [OpenSanctions](https://www.opensanctions.org/datasets/) | Consolidated sanctions/PEP + crypto entities | official |
+| [KuCoin PoR](https://www.kucoin.com/proof-of-reserves) | Exchange-published own wallets | official |
+
+---
+
+## 6. Prior art / honest limitation
 
 The tracing tech here is **commoditized**; the moat that Elliptic/Chainalysis sell is a
 **proprietary label database** (millions of addresses from clustering + exchange partnerships).
@@ -225,9 +286,12 @@ sanctions screening, public attribution, and honest, evidence-backed taint with 
 
 ### References
 
+- 12 historical incidents with evidence levels + provenance URLs — see `fixtures/incidents.json`.
+- Exchange/entity labels with source + confidence — see `fixtures/known-labels.json`.
 - Bybit/Lazarus 2025 — incident addresses & FBI attribution (see `fixtures/known-tainted.json`).
 - Coldcard RNG entropy flaw, July 2026 — Galaxy Research flow-of-funds mapping; Coinkite advisory.
-- OFAC SDN list — treasury.gov sanctions list service.
+- OFAC SDN list — treasury.gov sanctions list service; nightly mirror: 0xB10C/ofac-sanctioned-digital-currency-addresses.
 - OpenSanctions — consolidated sanctions + crypto datasets.
+- dawsbot/eth-labels & ImMike/crypto-wallet-address-labels — public label aggregators.
 - GLEIF — LEI legal-entity registry (entity metadata only; no wallet mapping).
 - Meiklejohn et al., *A Fistful of Bitcoins* — UTXO clustering heuristics.
