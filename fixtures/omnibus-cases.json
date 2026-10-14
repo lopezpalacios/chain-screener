@@ -1,0 +1,95 @@
+{
+  "$schema_note": "Bank / omnibus-wallet compliance scenarios. An OMNIBUS wallet = one commingled custody wallet holding funds for many customers (exchange hot wallets are the canonical real-world example). Real labeled addresses are used for the wallets, seeds, and sanctioned contracts. Edges marked \"scenario\": true (or listed in synthetic_addresses) are CONSTRUCTED test flows, not assertions that this exact transfer happened on-chain. Purpose: exercise how the screener reports when a bank's commingled wallet is exposed to tainted funds.",
+  "synthetic_addresses": {
+    "0x6b1e8f0d3a4c2b5e9f7a1d4c8b2e6f0a3c5d7e9b": "pass-through intermediary (test)",
+    "0xa1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f80910": "clean retail depositor A (test)",
+    "0xb1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f80911": "clean retail depositor B (test)",
+    "0xc1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f80912": "clean retail depositor C (test)"
+  },
+  "graph": [
+    {"chain": "ethereum", "from": "0x098b716b8aaf21512996dc57eb0615e2383e2f96", "to": "0xf977814e90da44bfa03b6295a0616a897441acec", "asset": "ETH", "amount": 12.5, "tx": "SCENARIO", "scenario": true, "incident": "ronin_2022"},
+    {"chain": "ethereum", "from": "0x47666fab8bd0ac7003bce3f5c3585383f09486e2", "to": "0x6b1e8f0d3a4c2b5e9f7a1d4c8b2e6f0a3c5d7e9b", "asset": "ETH", "amount": 8.0, "tx": "SCENARIO", "scenario": true, "incident": "bybit_2025"},
+    {"chain": "ethereum", "from": "0x6b1e8f0d3a4c2b5e9f7a1d4c8b2e6f0a3c5d7e9b", "to": "0x4e7b110335511f662fdbb01bf958a7844118c0d4", "asset": "ETH", "amount": 8.0, "tx": "SCENARIO", "scenario": true, "incident": "bybit_2025"},
+    {"chain": "ethereum", "from": "0xa1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f80910", "to": "0x503828976d22510aad0201ac7ec88293211d23da", "asset": "ETH", "amount": 100.0, "tx": "SCENARIO", "scenario": true},
+    {"chain": "ethereum", "from": "0xb1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f80911", "to": "0x503828976d22510aad0201ac7ec88293211d23da", "asset": "ETH", "amount": 50.0, "tx": "SCENARIO", "scenario": true},
+    {"chain": "ethereum", "from": "0xeb31973e0febf3e3d7058234a5ebbae1ab4b8c23", "to": "0x503828976d22510aad0201ac7ec88293211d23da", "asset": "ETH", "amount": 0.5, "tx": "SCENARIO", "scenario": true, "incident": "kucoin_2020"},
+    {"chain": "ethereum", "from": "0xd24400ae8bfebb18ca49be86258a3c749cf46853", "to": "0xd90e2f925da726b50c4ed8d0fb90ad053324f31b", "asset": "ETH", "amount": 5.0, "tx": "SCENARIO", "scenario": true, "incident": "tornado_cash_ofac"},
+    {"chain": "ethereum", "from": "0xc1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f80912", "to": "0xe9f7ecae3a53d2a67105292894676b00d1fab785", "asset": "ETH", "amount": 25.0, "tx": "SCENARIO", "scenario": true}
+  ],
+  "bank_controls": [
+    "Screen the omnibus wallet itself AND every counterparty on deposit, not just the wallet.",
+    "On a direct sanctions hit (score >= 90): escalate to the compliance officer, evaluate reject/freeze before crediting, file a SAR where warranted.",
+    "Pooled funds are not attributed to a customer: treat a tainted inflow as a whole-pool exposure until the specific depositor is identified.",
+    "Do not dismiss a designated source on amount (dust rule). Amount reduces, but never erases, designated-source exposure.",
+    "Document the known gaps (no internal-transfer tracing on free RPCs; no off-chain legs) in every report.",
+    "Re-screen on an ongoing basis, not only at onboarding."
+  ],
+  "cases": [
+    {
+      "id": "omnibus_inbound_sanctioned",
+      "title": "Direct inflow from an OFAC-designated address",
+      "scenario": "A bank-run omnibus custody wallet (real example: a major exchange hot wallet) receives a transfer one hop from an OFAC-sanctioned address.",
+      "omnibus_wallet": {"chain": "ethereum", "addr": "0xf977814e90da44bfa03b6295a0616a897441acec", "label": "Binance: Hot Wallet 20 (canonical omnibus example)"},
+      "tainted_source": {"chain": "ethereum", "addr": "0x098b716b8aaf21512996dc57eb0615e2383e2f96", "incident": "ronin_2022", "sanctioned": true},
+      "flow": {"direction": "inbound", "hops": 1, "amount": "12.5 ETH", "scenario": true},
+      "why_it_matters": "A sanctioned inbound transfer creates sanctions exposure for the entire commingled pool, not just one customer. Strict-liability sanctions regimes do not care that it was 12.5 out of thousands of ETH.",
+      "expected": {"risk_score": 92, "band": "CRITICAL", "action": "Escalate; consider rejecting/freezing the credit; screen and block the counterparty; preserve evidence."},
+      "refs": ["fixtures/incidents.json#ronin_2022"]
+    },
+    {
+      "id": "omnibus_inbound_two_hop",
+      "title": "Two-hop taint from a Lazarus-linked exploiter",
+      "scenario": "Tainted funds from the Bybit exploiter pass through one intermediary before landing in a second omnibus wallet.",
+      "omnibus_wallet": {"chain": "ethereum", "addr": "0x4e7b110335511f662fdbb01bf958a7844118c0d4", "label": "OKX: Hot Wallet 2 (omnibus example)"},
+      "tainted_source": {"chain": "ethereum", "addr": "0x47666fab8bd0ac7003bce3f5c3585383f09486e2", "incident": "bybit_2025", "sanctioned": false},
+      "flow": {"direction": "inbound", "hops": 2, "amount": "8.0 ETH", "scenario": true},
+      "why_it_matters": "Layering (one extra hop) lowers but does not remove exposure. Hop distance is a risk gradient, not a pass/fail line.",
+      "expected": {"risk_score": 65, "band": "MEDIUM", "action": "Enhanced monitoring; trace full path; document the intermediary."},
+      "refs": ["fixtures/incidents.json#bybit_2025"]
+    },
+    {
+      "id": "omnibus_many_customers_one_tainted",
+      "title": "One tainted depositor hidden among clean flows",
+      "scenario": "An omnibus wallet receives 150 ETH of clean retail deposits and 0.5 ETH from a hack-linked address. The wallet cannot tell which customer is which.",
+      "omnibus_wallet": {"chain": "ethereum", "addr": "0x503828976d22510aad0201ac7ec88293211d23da", "label": "Coinbase 12 (omnibus example)"},
+      "tainted_source": {"chain": "ethereum", "addr": "0xeb31973e0febf3e3d7058234a5ebbae1ab4b8c23", "incident": "kucoin_2020", "sanctioned": false},
+      "flow": {"direction": "inbound", "hops": 1, "amount": "0.5 ETH", "pooled_inflow": "150.5 ETH", "scenario": true},
+      "why_it_matters": "This is the core omnibus problem: a tiny tainted deposit taints the pool, and normal tools cannot name the responsible customer. Amount-based dismissal is unsafe when the source is a designated or hack-linked address.",
+      "expected": {"risk_score": 85, "band": "HIGH", "action": "Do not dismiss on amount; investigate inbound deposit records; potential pool-level restriction."},
+      "refs": ["fixtures/incidents.json#kucoin_2020"]
+    },
+    {
+      "id": "omnibus_outbound_to_sanctioned",
+      "title": "Outbound transfer to a sanctioned mixer",
+      "scenario": "An omnibus wallet sends funds directly to the OFAC-sanctioned Tornado Cash router.",
+      "omnibus_wallet": {"chain": "ethereum", "addr": "0xd24400ae8bfebb18ca49be86258a3c749cf46853", "label": "Gemini 4 (omnibus example)"},
+      "tainted_source": {"chain": "ethereum", "addr": "0xd90e2f925da726b50c4ed8d0fb90ad053324f31b", "incident": "tornado_cash_ofac", "sanctioned": true},
+      "flow": {"direction": "outbound", "hops": 1, "amount": "5.0 ETH", "scenario": true},
+      "why_it_matters": "Outbound exposure matters as much as inbound: sending to a sanctioned address is itself a prohibited dealing and a money-laundering red flag.",
+      "expected": {"risk_score": 95, "band": "CRITICAL", "action": "Escalate; stop/recall if possible; file SAR; freeze relationship pending review."},
+      "refs": ["https://ofac.treasury.gov/recent-actions/20220808"]
+    },
+    {
+      "id": "omnibus_custody_ftx",
+      "title": "Commingling without taint: the custody-risk blind spot",
+      "scenario": "An omnibus wallet shows no path to any tainted seed, yet the operator can still commingle customer and corporate funds and become insolvent (real-world illustration: FTX). Taint screening cannot see this risk.",
+      "omnibus_wallet": {"chain": "ethereum", "addr": "0x062448f804191128d71fc72e10a1d13bd7308e7e", "label": "Deribit 6 (illustrative omnibus)"},
+      "tainted_source": null,
+      "flow": {"direction": "none", "hops": null, "amount": "n/a", "scenario": false},
+      "why_it_matters": "Screening answers 'is this money dirty?'. It does NOT answer 'is this custodian solvent / honest?'. Omnibus custody adds counterparty and commingling risk that taint scoring is blind to. A complete bank control set needs both.",
+      "expected": {"risk_score": 5, "band": "LOW", "action": "No taint action; rely on separate custody/counterparty due-diligence controls."},
+      "refs": ["https://www.justice.gov/usao-sdny/pr/sam-bankman-fried-sentenced"]
+    },
+    {
+      "id": "omnibus_clean_control",
+      "title": "Negative control: clean omnibus wallet",
+      "scenario": "A labeled exchange wallet receives only clean inflows and has no path to any seed within the hop cap. Must NOT flag.",
+      "omnibus_wallet": {"chain": "ethereum", "addr": "0xe9f7ecae3a53d2a67105292894676b00d1fab785", "label": "Kraken: Hot Wallet"},
+      "tainted_source": null,
+      "flow": {"direction": "inbound", "hops": null, "amount": "25.0 ETH (clean)", "scenario": true},
+      "why_it_matters": "False positives make an omnibus wallet unusable and cause de-risking that harms legitimate customers. The control asserts a clean wallet stays LOW.",
+      "expected": {"risk_score": 5, "band": "LOW", "action": "No action."},
+      "refs": []
+    }
+  ]
+}

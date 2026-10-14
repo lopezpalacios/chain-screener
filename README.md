@@ -226,7 +226,81 @@ MVP is "done" when E1–E6 pass and the metric targets above are met on the fixt
 
 ---
 
-## 4. Incident cases (`fixtures/incidents.json`)
+## 4. Compliance context: banks & omnibus wallets
+
+This is written for a **bank or payment firm that holds customer crypto in an omnibus
+(commingled) wallet** — one pooled on-chain address that custodies funds for many customers at
+once. Exchange hot wallets are the canonical real-world example; the same shape applies to a
+bank's pooled custody address.
+
+### The omnibus problem
+
+When funds for thousands of customers sit in one address, **per-customer attribution is gone**.
+You can see everything that enters and leaves the pool, but not *whose* money it is. Two
+consequences drive everything here:
+
+1. **A tainted deposit taints the pool.** One sanctioned or hack-linked inflow is exposure for
+   the whole commingled balance, not just the one customer — under strict-liability sanctions
+   regimes the size of the deposit is irrelevant.
+2. **You cannot "just remove" the bad customer.** The pool is fungible; the responsible
+   depositor can only be named from *your own off-chain deposit records*, never from chain data.
+
+### What screening answers — and what it cannot
+
+| Question | Answerable from open data? |
+|---|---|
+| Is *this wallet* on a sanctions list? | **Yes** — exact match on OFAC SDN / OpenSanctions. |
+| Who owns this wallet (exchange, bridge, cluster)? | **Yes, probabilistically** — public labels. |
+| Does the pool have inbound/outbound exposure to tainted funds? | **Yes** — graph trace to nearest seed, with hop distance. |
+| How far (hops) is the exposure? Does it cross a bridge? | **Yes** — taint BFS + cross-chain leg matching. |
+| *Which customer* deposited the tainted funds? | **No** — needs the bank's own deposit ledger. |
+| Is the custodian solvent / honest? | **No** — taint scoring is blind to custody risk (see the FTX scenario). |
+| Internal/native transfers hidden inside contract calls? | **Often no** on free RPCs — documented in `limits.known_gaps`. |
+
+### Regulatory frame (plain language, not legal advice)
+
+- **OFAC / sanctions:** strict liability in the US — a designated counterparty in the pool is a
+  problem regardless of intent or amount. Outbound transfers *to* a designated address are their
+  own violation.
+- **FATF Recommendation 16 (Travel Rule):** originator/beneficiary information must travel with
+  transfers; omnibus pooling makes satisfying this depend on your internal ledger.
+- **BSA / AML:** suspicious activity triggers a SAR; sanctions hits may require blocking reports.
+- **EU AMLR / MiCA** and similar regimes add transfer-of-funds and custody rules.
+
+### Worked scenarios (`fixtures/omnibus-cases.json`)
+
+Six bank-facing scenarios, each with an expected score, over real labeled wallets + real
+seeds (constructed flows are flagged `scenario: true`): direct sanctioned inflow, two-hop
+Lazarus taint, one-tainted-depositor-in-a-clean-pool, outbound to a sanctioned mixer, an
+untraceable custody failure, and a clean negative control. Run them:
+
+```bash
+python3 demo/omnibus_screen.py          # full compliance report + pass/fail
+python3 demo/omnibus_screen.py --wallet 0xf977814e90da44bfa03b6295a0616a897441acec
+python3 demo/omnibus_screen.py --json
+```
+
+The demo is **offline and deterministic** (stdlib only): it replays the fixture graph, so it
+runs with no RPC and no node.
+
+### Minimum control set a bank should wrap around this
+
+1. Screen the omnibus wallet **and every counterparty on deposit** — not just the wallet.
+2. On a direct sanctions hit (score ≥ 90): **escalate, evaluate reject/freeze before crediting,
+   and file where warranted** — do not net or net-off.
+3. Treat a tainted inflow as **whole-pool exposure** until the depositor is identified from your
+   ledger.
+4. **Never dismiss a designated source on amount.** A dust rule may lower risk; it does not
+   erase designated-source exposure.
+5. **Document the known gaps** (no internal-transfer tracing on free RPCs; no off-chain legs) in
+   every report you rely on.
+6. **Re-screen continuously,** not only at onboarding.
+
+> Not legal or compliance advice. This is an engineering demonstration of what open data can and
+> cannot support; a real program needs counsel, a licensed analytics vendor where required, and
+> your own transaction-monitoring controls.
+
+## 5. Incident cases (`fixtures/incidents.json`)
 
 12 cases, each seeded with at least one address and an evidence level. Two (Bybit, Coldcard) also
 appear in `known-tainted.json` with fuller graphs. Addresses marked `partial` were published
@@ -252,7 +326,7 @@ industry-attributed), chains (ETH, BSC, Polygon, Arbitrum, Solana, Bitcoin), and
 exploiter, multi-address syndicate, and Coldcard's many-to-few fan-in). That diversity is what makes
 the evals meaningful rather than one-happy-path.
 
-## 5. Known entity labels (`fixtures/known-labels.json`)
+## 6. Known entity labels (`fixtures/known-labels.json`)
 
 Disclosed exchange/player wallets + known contracts. Each row carries `source` and `confidence`:
 
@@ -277,7 +351,7 @@ deterministic test data.** The curated list is a seed, not the product. Live sou
 
 ---
 
-## 6. Prior art / honest limitation
+## 7. Prior art / honest limitation
 
 The tracing tech here is **commoditized**; the moat that Elliptic/Chainalysis sell is a
 **proprietary label database** (millions of addresses from clustering + exchange partnerships).
