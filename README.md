@@ -23,13 +23,23 @@ Copy-paste this into a coding agent (Claude Code / Codex / opencode) to build th
 ```text
 ROLE
 You are a senior blockchain-data engineer. Build a read-only wallet screening and
-fund-flow tracing service. Read-only: never sign, never spend, never touch private keys.
+fund-flow tracing service for compliance use. Read-only: never sign, never spend,
+never touch private keys.
+
+WHO IT IS FOR
+A bank or payment firm that holds customer crypto in an OMNIBUS (commingled) custody
+wallet: one pooled on-chain address for many customers. Per-customer attribution is
+lost, so reason about POOL-LEVEL exposure and never pretend to name a customer from
+chain data alone.
 
 GOAL
 Given a wallet address (or tx hash), return:
   (a) sanctions status against OFAC SDN + OpenSanctions,
   (b) entity attribution from a local label store,
-  (c) a taint report: fund-flow paths up to K hops from the nearest known-tainted seed,
+  (c) an exposure report: source-of-funds and destination-of-funds as value-weighted
+      breakdowns by category (SANCTIONED, MIXER, RANSOMWARE, DARKNET_MARKET, STOLEN_FUNDS,
+      SCAM, EXCHANGE, ...), each with the SHARE of flow, hop distance, and direct vs
+      indirect split,
   (d) a 0-100 risk score with the evidence that produced it.
 
 CHAINS
@@ -73,19 +83,29 @@ SANCTIONS MATCHER
   - Exact match on (chain, normalized_addr) against the ingested lists.
   - Output: list_name, entity_name, program, listing_date, source_url, confidence.
 
-TIANT / TRACE ENGINE
+EXPOSURE / TRACE ENGINE
   - Model the chain as a directed transfer graph: nodes = addresses, edges =
     {tx_hash, from, to, asset, amount, block, chain, hop}.
   - Ethereum + Arbitrum: build edges from eth_getLogs (ERC-20 Transfer) + native value
     transfers (receipts). NOTE: most free public RPCs do NOT expose trace_* /
     debug_traceTransaction, so internal/native transfers embedded in contract calls may be
-    invisible. Document this gap explicitly in the report; do not silently undercount.
+    invisible. Document this gap explicitly in limits.known_gaps; do not silently undercount.
   - Bitcoin: walk UTXOs from your own node via getrawtransaction (txindex=1) / gettxout.
     Follow outputs; support forward (spend) and backward (funding) traversal.
-  - Taint propagation: BFS from each seed. Each hop decays the taint weight
-    (default decay=0.5/hop, configurable). Record the shortest path and the min-hop distance
-    from any seed. Handle cycles and high-fan-out (exchange) nodes with a visited set and a
-    visit cap.
+  - SANCTIONS HOP COMPLETENESS: for the SANCTIONED category only, keep tracing through all
+    hops until exposure to a sanctioned actor is detected or the component is exhausted. Do
+    not stop at a fixed hop budget - a fixed cap (3 or 5 hops) is a known compliance failure
+    that Lazarus-style multi-hop layering defeats. Use the hop cap only to bound non-sanctions
+    heuristic scoring and runtime, never to declare a sanctions "clear".
+
+TAINT PROPAGATION
+  - BFS from each seed. Each hop decays the taint weight (default decay=0.5/hop, configurable).
+  - Record the shortest path and the min-hop distance from any seed.
+  - Handle cycles and high-fan-out nodes with a visited set and a visit cap.
+  - LABEL DAMPENING: when the counterparty is a known service/exchange cluster, DAMPEN the
+    score. Exchange hot wallets carry indirect-exposure flags from commingled funds - their
+    label is a strong dampener, not an accusation. An exchange-labeled wallet at score 60 is
+    structurally different from an unlabeled wallet at score 60.
 
 BRIDGE / CROSS-CHAIN
   - If a tainted ETH address sends into the Arbitrum canonical bridge
@@ -94,17 +114,44 @@ BRIDGE / CROSS-CHAIN
     destination chain. Flag the leg as "cross-chain hop".
 
 SCORING (0-100)
+  - score = max of matched label scores, blended with the value-weighted indirect exposure;
+    then apply label dampening for known service/exchange clusters.
   - 100: direct exact sanctions hit OR direct seed hit.
   - 80-99: <= 1 hop from a seed, or attribution to a known-bad cluster.
   - 50-79: 2-3 hops, material amount.
   - 20-49: >= 4 hops or dust-only connection.
-  - 0-19: no path to any seed within K hops.
-  - Always return the evidence list (paths, amounts, distances) that yielded the score.
+  - 0-19: no path to any seed within the hop cap.
+  - Always return the evidence list (paths, amounts, value-weighted shares, distances) that
+    yielded the score.
+
+OMNIBUS / BANK COMPLIANCE
+  - The target user is a bank custodying customer funds in a commingled/omnibus wallet. Screen
+    the omnibus wallet itself AND every counterparty on deposit - not just the wallet.
+  - A tainted inflow is whole-pool exposure until the specific depositor is identified from the
+    bank's own ledger; never attribute a customer from chain data.
+  - On a direct sanctions hit (score >= 90): produce an escalation recommendation (reject/freeze
+    before crediting, preserve evidence) and support filing a SAR (suspicious activity report).
+  - Outbound transfers to a designated address are their own violation - flag them.
+  - DUST RULE: amount may lower risk but must never erase a designated-source hit.
+  - Travel Rule context: support screening of senders, recipients and counterparties, including
+    unhosted (self-custody) wallets, per FATF Recommendation 16.
+
+NEGATIVE CONTROLS
+  - Avoid false positives: a known-clean exchange wallet or a fresh benign address must score
+    < 20 (LOW) with zero sanctions entries. Ship explicit control cases.
+
+AUDIT & RECORDS
+  - Emit an immutable audit record per screen: the input, the result, the list version / snapshot
+    used, and the time the address was screened at. The response is the record.
+  - Support re-screen of a customer book when a sanctions list refresh lands, and re-score
+    affected wallets retroactively.
 
 OUTPUT (JSON, stable key order)
   { "input", "chain", "sanctions": [...], "attribution": [...],
+    "exposure": { "source_of_funds": [...], "destination_of_funds": [...] },
     "risk_score", "risk_band", "paths": [...], "truncated": bool,
-    "limits": { "max_hops", "decay", "rpc", "known_gaps": [...] } }
+    "limits": { "max_hops", "decay", "rpc", "known_gaps": [...] },
+    "audit": { "screened_at", "list_versions": {...} } }
   Also emit a Mermaid + Graphviz view of the traced subgraph for humans.
 
 RESILIENCE
@@ -113,9 +160,11 @@ RESILIENCE
     block continuity.
   - Degrade gracefully: if trace methods are unavailable, say so in "limits.known_gaps"
     rather than returning a wrong answer.
+  - Fail-closed for sanctions gating: if the sanctions data or the indexer is unavailable, do
+    NOT silently return "clean".
 
 DEFINITION OF DONE
-  - Passes every eval in Section 3 (fixtures in fixtures/known-tainted.json).
+  - Passes every eval in Section 3 (fixtures in fixtures/).
   - `python -m chain_screener.cli screen --chain eth --addr <A>` runs offline against a
     pre-fetched sqlite cache.
   - `python -m chain_screener.evals` prints a PASS/FAIL table.
