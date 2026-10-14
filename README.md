@@ -273,6 +273,24 @@ MVP is "done" when E1–E6 pass and the metric targets above are met on the fixt
   independent victim wallets fan-in to a handful of collectors. Tests clustering + fan-in
   detection on Bitcoin, not a single exploit address.
 
+### Scorecard & hill-climb
+
+`python3 evals/score.py` scores three components into one number and appends to
+`evals/history.jsonl`:
+
+| Component | Weight | What it measures |
+|---|---|---|
+| fixture | 0.15 | all fixture files present, valid JSON, minimum counts |
+| functional | 0.30 | the offline demo engine reproduces every expected scenario score |
+| prompt | 0.55 | the README prompt specifies everything the evals require (25-item rubric) |
+
+The prompt component is the **hill-climb objective**: run the scorer, fix the failing rubric
+items in the prompt, re-run, keep the gain. Current: **100/100** (fixture 100, functional 100,
+prompt 100). The rubric grew from 19 to 25 items using AML-screening research — e.g. *sanctions
+hop-completeness* (a fixed 3/5-hop cap is a known compliance failure), *label dampening* for
+exchange clusters, *value-weighted* source/destination-of-funds exposure, *fail-closed* gating,
+and *audit records* carrying the sanctions-list version.
+
 ---
 
 ## 4. Compliance context: banks & omnibus wallets
