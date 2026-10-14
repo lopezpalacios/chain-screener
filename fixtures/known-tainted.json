@@ -1,0 +1,189 @@
+{
+  "$schema_note": "Curated seed addresses from public incident/government reporting. Every entry carries an evidence level. 'partial: true' means the source published a truncated address; resolve full value from the cited report before relying on it. These are NOT all the same evidence type - respect the 'evidence' field.",
+  "generated_for": "chain-screener evals (E1-E6)",
+  "chains": ["ethereum", "arbitrum", "bitcoin"],
+
+  "incidents": {
+    "bybit_2025": {
+      "summary": "Feb 21 2025. ~401,346 ETH (~$1.5B) drained from Bybit SAFE multisig cold wallet. Attributed to Lazarus Group (DPRK, TraderTraitor).",
+      "evidence": "on-chain verified + FBI attribution",
+      "victim": [
+        {
+          "chain": "ethereum",
+          "addr": "0x1Db92e2EeBC8E0c075a02BeA49a2935BcD2dFCF4",
+          "role": "Bybit Cold Wallet 1 (compromised)",
+          "evidence": "verified_on_chain"
+        }
+      ],
+      "attack_infra": [
+        {
+          "chain": "ethereum",
+          "addr": "0x0fa09C3A328792253f8dee7116848723b72a6d2e",
+          "role": "initial attack operator",
+          "evidence": "supported_attribution"
+        },
+        {
+          "chain": "ethereum",
+          "addr": "0xbDd077f651EBe7f7b3cE16fe5F2b025BE2969516",
+          "role": "malicious Safe implementation (backdoor sweepETH/sweepERC20)",
+          "evidence": "verified_on_chain"
+        },
+        {
+          "chain": "ethereum",
+          "addr": "0x96221423681A6d52E184D440a8eFCEbB105C7242",
+          "role": "delegate-call attack contract",
+          "evidence": "supported_attribution"
+        }
+      ],
+      "exploiters": [
+        {
+          "chain": "ethereum",
+          "addr": "0x47666Fab8bd0Ac7003bce3f5C3585383F09486E2",
+          "role": "Bybit Exploiter 1 (main)",
+          "evidence": "verified_on_chain",
+          "note": "Etherscan-labeled. Primary forward-trace seed for E1/E2."
+        }
+      ],
+      "fbi_attributed": [
+        {
+          "chain": "ethereum",
+          "addr": "0x51E9d833Ecae4E8D9D8Be17300AEE6D3398C135D",
+          "role": "TraderTraitor-connected holding address",
+          "evidence": "fbi_published"
+        },
+        {
+          "chain": "ethereum",
+          "addr": "0x96244D83DC15d36847C35209bBDc5bdDE9bEc3D8",
+          "role": "TraderTraitor-connected holding address",
+          "evidence": "fbi_published"
+        },
+        {
+          "chain": "ethereum",
+          "addr": "0x83c7678492D623fb98834F0fbcb2E7b7f5Af8950",
+          "role": "TraderTraitor-connected holding address",
+          "evidence": "fbi_published"
+        }
+      ],
+      "transactions": [
+        {
+          "chain": "ethereum",
+          "tx": "0xb61413c495fdad6114a7aa863a00b2e3c28945979a10885b12b30316ea9f072c",
+          "role": "ETH drain (~401,346 ETH)",
+          "evidence": "verified_on_chain"
+        },
+        {
+          "chain": "ethereum",
+          "tx": "0x46deef0f52e3a983b67abf4714448a41dd7ffd6d32d32da69d62081c68ad7882",
+          "role": "Safe implementation change to malicious contract",
+          "evidence": "verified_on_chain"
+        }
+      ],
+      "eval_targets": {
+        "E1": "screen(eth, 0x47666Fab8bd0Ac7003bce3f5C3585383F09486E2) -> risk 100, CRITICAL",
+        "E2": "trace_forward(tx 0xb61413...f072c, max_hops=3) reaches >=1 of fbi_attributed",
+        "E4": "tainted ETH entering Arbitrum canonical bridge flagged as cross-chain hop"
+      }
+    },
+
+    "coldcard_2026": {
+      "summary": "Jul 30 2026. Coldcard hardware wallet RNG integration error (deterministic MicroPython Yasmarang fallback instead of STM32 hardware RNG; ~40-72 bit entropy). Attackers regenerated weak seeds offline and swept funds. Wave 1: 1,082.65 BTC from 1,196 addresses in 41 min (blocks 960,183-960,191). Total across waves: >=1,778 BTC from >8,600 addresses.",
+      "evidence": "galaxy_research on-chain + coinkite advisory",
+      "pattern": {
+        "type": "fan_in",
+        "signature": "identical 30.0 sat/vB fee, no change output, full sweep",
+        "victim_script_types": {"P2WPKH_bip84": 1183, "P2SH_bip49": 7, "P2PKH_bip44": 6}
+      },
+      "collectors": [
+        {
+          "chain": "bitcoin",
+          "addr_reported_truncated": "bc1qq85v2c9…cu9r",
+          "partial": true,
+          "balance_btc_at_report": 562.02,
+          "role": "collector (largest)",
+          "note": "Resolve full address from Galaxy Research published list."
+        },
+        {
+          "chain": "bitcoin",
+          "addr_reported_truncated": "bc1qx76cae2…fhe3",
+          "partial": true,
+          "balance_btc_at_report": 398.48,
+          "role": "collector",
+          "note": "Resolve full address from Galaxy Research published list."
+        },
+        {
+          "chain": "bitcoin",
+          "addr_reported_truncated": "bc1q8jy96fe…tp3q",
+          "partial": true,
+          "balance_btc_at_report": 89.62,
+          "role": "collector",
+          "note": "Resolve full address from Galaxy Research published list."
+        },
+        {
+          "chain": "bitcoin",
+          "addr_reported_truncated": "bc1qnk4zh9q…fecp0",
+          "partial": true,
+          "balance_btc_at_report": 32.45,
+          "role": "collector",
+          "note": "Resolve full address from Galaxy Research published list."
+        }
+      ],
+      "downstream": {
+        "moved_after_theft_btc": 246,
+        "to_coinjoin_pct": 65,
+        "further_onchain_pct": 35,
+        "note": "~1,531 BTC remained unmoved in attacker addresses at report time. 33+ attacker footprints."
+      },
+      "eval_targets": {
+        "E3": "given victim set, identify the collectors as a common sink (fan-in ratio >= threshold) and flag cluster"
+      }
+    }
+  },
+
+  "controls": {
+    "clean": {
+      "summary": "Benign controls for E5. Zero taps to any seed; must NOT be flagged.",
+      "addresses": [
+        {
+          "chain": "ethereum",
+          "addr": "0x00000000219ab540356cBB839Cbe05303d7705Fa",
+          "label": "ETH2 Beacon Deposit Contract (public infra, benign)",
+          "expected_band": "LOW"
+        }
+      ],
+      "note": "E5 also expects a freshly-funded random address to score LOW. Do not hardcode exchange hot-wallet addresses as clean without a source; add them only if verifiable."
+    }
+  },
+
+  "synthetic": {
+    "linear_chain": {
+      "description": "Deterministic 5-node linear ETH graph, seed at node 0, decay 0.5.",
+      "edges": [
+        {"from": "A", "to": "B", "amount": 100, "hop": 1},
+        {"from": "B", "to": "C", "amount": 90, "hop": 2},
+        {"from": "C", "to": "D", "amount": 50, "hop": 3},
+        {"from": "D", "to": "E", "amount": 10, "hop": 4}
+      ],
+      "expected": {
+        "A": {"risk": 100, "dist": 0},
+        "B": {"risk_min": 80, "dist": 1},
+        "C": {"risk_min": 50, "dist": 2},
+        "D": {"risk_min": 50, "dist": 3},
+        "E": {"risk_max": 49, "dist": 4}
+      }
+    },
+    "fan_in": {
+      "description": "10 leaves -> 1 collector. Fan-in ratio 10:1 should flag the collector.",
+      "collector": "SINK",
+      "leaves": ["L1","L2","L3","L4","L5","L6","L7","L8","L9","L10"],
+      "expected": {"SINK": {"flagged": true, "fan_in_ratio_min": 5.0}}
+    }
+  },
+
+  "sources": [
+    "https://home.treasury.gov/ (OFAC SDN list, Digital Currency Address idType)",
+    "https://www.opensanctions.org/datasets/ (sanctions + crypto)",
+    "https://www.gleif.org/ (LEI legal-entity file; entity metadata only)",
+    "https://www.galaxy.com/insights/research/ (Coldcard flow-of-funds)",
+    "https://lazarus.day/reports/ (Bybit incident reporting)"
+  ]
+}
