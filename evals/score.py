@@ -52,6 +52,13 @@ RUBRIC = [
     ("determinism", 2, ["byte-identical"]),
     ("definition_of_done", 2, ["passes every eval", "no non-stdlib"]),
     ("omnibus_bank", 3, ["omnibus", "commingled", "counterpart", "sar"]),
+    ("hop_completeness", 2, ["until exposure", "fixed hop"]),
+    ("label_damping", 1, ["dampen", "exchange"]),
+    ("exposure_breakdown", 2, ["source-of-funds", "value-weighted", "share"]),
+    ("fail_closed", 1, ["fail-closed", "sanctions"]),
+    ("audit_record", 2, ["audit", "list version", "screened at"]),
+    ("travel_rule", 1, ["travel rule", "counterparty", "unhosted"]),
+    ("rescreen", 1, ["re-screen", "list refresh"]),
     ("human_view", 1, ["mermaid", "graphviz"]),
     ("negative_controls", 1, ["false positive"]),
 ]
